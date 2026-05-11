@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Search/stable/2024-07-01/searchservice.json",
+  "name": "docs-indexer",
+  "description": "Hybrid semantic search indexer for documents. Indexes PDFs from Azure Blob Storage with sentence-level chunking, metadata extraction, and vector embeddings via Azure OpenAI. Designed for a RAG pipeline serving a Copilot Studio agent.",
+  "dataSourceName": "docs-blob-datasource",
+  "targetIndexName": "docs-index",
+  "skillsetName": "docs-skillset",
+  "schedule": {
+    "interval": "PT2H",
+    "startTime": "2026-01-01T00:00:00Z"
+  },
+  "parameters": {
+    "batchSize": 10,
+    "maxFailedItems": 5,
+    "maxFailedItemsPerBatch": 2,
+    "configuration": {
+      "dataToExtract": "contentAndMetadata",
+      "parsingMode": "default",
+      "imageAction": "none",
+      "allowSkillsetToReadFileData": true
+    }
+  },
+  "fieldMappings": [
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "id",
+      "mappingFunction": {
+        "name": "base64Encode"
+      }
+    },
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "source_url"
+    },
+    {
+      "sourceFieldName": "metadata_storage_name",
+      "targetFieldName": "file_name"
+    },
+    {
+      "sourceFieldName": "metadata_storage_last_modified",
+      "targetFieldName": "last_modified"
+    },
+    {
+      "sourceFieldName": "metadata_content_type",
+      "targetFieldName": "content_type"
+    }
+  ],
+  "outputFieldMappings": [
+    {
+      "sourceFieldName": "/document/pages/*/content",
+      "targetFieldName": "content"
+    },
+    {
+      "sourceFieldName": "/document/pages/*/embedding",
+      "targetFieldName": "content_vector"
+    },
+    {
+      "sourceFieldName": "/document/pages/*/chunk_id",
+      "targetFieldName": "chunk_id"
+    },
+    {
+      "sourceFieldName": "/document/pages/*/page_number",
+      "targetFieldName": "page_number"
+    },
+    {
+      "sourceFieldName": "/document/pages/*/chunk_sequence",
+      "targetFieldName": "chunk_sequence"
+    },
+    {
+      "sourceFieldName": "/document/pages/*/keyPhrases",
+      "targetFieldName": "key_phrases"
+    },
+    {
+      "sourceFieldName": "/document/document_type",
+      "targetFieldName": "document_type"
+    }
+  ]
+}
