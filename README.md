@@ -12,7 +12,7 @@
 | Directory | Contents |
 |-----------|----------|
 | `agents/` | 11 Claude Code sub-agents across engineering, design, marketing, research, and strategy |
-| `skills/` | 21 Claude Code slash-command skills for daily work |
+| `skills/` | 22 Claude Code slash-command skills for daily work |
 | `tools/` | Standalone scripts and utilities for AI engineering workflows |
 | `msft/` | Azure AI Search configs, Power Automate patterns, Copilot Studio deployment guides |
 | `docs/` | Architecture Decision Records and environment setup guides |
@@ -90,6 +90,7 @@ Skills are slash commands invoked inside Claude Code with `/skill-name`. Each sk
 | `implementation-planning` | `/implementation-planning` | Break a feature into sequenced implementation steps |
 | `adr-writing` | `/adr-writing` | Generate an Architecture Decision Record |
 | `api-design` | `/api-design` | Design a RESTful or GraphQL API with OpenAPI spec |
+| `project-estimation` | `/project-estimation` | Estimate effort, staffing, timeline, scope, and week-by-week delivery plan |
 
 ### Design Skills
 
@@ -170,6 +171,7 @@ Then invoke them in Claude Code:
 /swot-analysis our current market position vs. competitors
 /exec-summary [paste the report or document]
 /social-calendar B2B SaaS brand, LinkedIn + Instagram, 4x/week
+/project-estimation Estimate this Azure AI solution for 2 developers at 20 hours/week each and export an Excel workbook
 ```
 
 ## About
