@@ -1,1 +1,7 @@
 .claude
+# Local-only files: never commit
+.scrub-blocklist
+channel-brief.local.md
+lazycut-skills.zip
+__pycache__/
+plugins/*/evals/results/
