@@ -29,4 +29,14 @@ claude plugin eval plugins/lazycut --ablation none
 
 Each case runs three times by default. Results are written to `evals/results/`, which is listed in `.gitignore`.
 
-These cases have not been run yet. Treat the first run as a check of the cases themselves as much as of the skills.
+## Last run
+
+Run on 2026-11-27 against version 0.1.0, one arm (`--ablation none`):
+
+| Skills | Runs per case | Result |
+| --- | --- | --- |
+| `clip-finder` | 3 | 6 of 6 cases passed |
+| `youtube-gaming-seo` | 3 | 6 of 6 cases passed, after its description was widened to cover "posting to YouTube" requests |
+| The other seven skills | 1 | 42 of 42 cases passed |
+
+A single run per case is a weak signal. Rerun with three runs before relying on a result.

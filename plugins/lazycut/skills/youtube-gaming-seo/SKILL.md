@@ -1,6 +1,6 @@
 ---
 name: youtube-gaming-seo
-description: "Generates complete, copy-paste-ready YouTube SEO metadata for a gaming video (titles, description, tags, thumbnail guidance, and a pre-publish checklist) from a game name and a rough video title, researching the game and subject for accuracy first. Use when YouTube titles, descriptions, or tags are wanted for a gaming video, or when one or more game and title pairs are handed over for a YouTube upload, even if the word SEO is never used."
+description: "Generates complete, copy-paste-ready YouTube SEO metadata for a gaming video (titles, description, tags, thumbnail guidance, and a pre-publish checklist) from a game name and a rough video title, researching the game and subject for accuracy first. Use when YouTube titles, descriptions, tags, chapters, or thumbnails are wanted for a gaming video, when a gaming video is about to be posted or uploaded to YouTube, or when one or more game and title pairs are handed over, even if the word SEO is never used."
 ---
 
 # YouTube Gaming SEO Metadata
