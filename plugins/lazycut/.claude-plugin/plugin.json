@@ -1,0 +1,11 @@
+{
+  "name": "lazycut",
+  "version": "0.1.0",
+  "description": "Takes raw gameplay footage to a published short-form post: analyse, pick clips, plan, edit, voice over, and package.",
+  "author": {
+    "name": "Zain Baquar"
+  },
+  "repository": "https://github.com/zainbaq/agents-skills-and-tools",
+  "license": "MIT",
+  "keywords": ["video", "shorts", "gameplay", "short-form"]
+}

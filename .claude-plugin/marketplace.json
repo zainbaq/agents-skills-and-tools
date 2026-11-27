@@ -1,0 +1,22 @@
+{
+  "name": "zainbaq-pods",
+  "description": "Pods: small groups of skills that serve one job and run roughly in order on one piece of work.",
+  "owner": {
+    "name": "Zain Baquar"
+  },
+  "plugins": [
+    {
+      "name": "lazycut",
+      "source": "./plugins/lazycut",
+      "description": "Takes raw gameplay footage to a published short-form post: analyse, pick clips, plan, edit, voice over, and package."
+    },
+    {
+      "name": "promethean-talos",
+      "source": {
+        "source": "github",
+        "repo": "zainbaq/promethean-talos"
+      },
+      "description": "Talos, maintained in its own repository and listed here so it installs from the same marketplace."
+    }
+  ]
+}
