@@ -59,6 +59,8 @@ Text always stays out of the top 12% and bottom 15% of a vertical frame, where p
 ffmpeg -v error -y -i out.mp4 -vf "select='eq(n,45)+eq(n,570)+eq(n,960)',scale=450:-1,tile=3x1" -vsync 0 -frames:v 1 -update 1 check.jpg
 ```
 
+If ffmpeg reports `Unrecognized option 'vsync'` (newer builds), use `-fps_mode passthrough` in place of `-vsync 0`.
+
 ## Outputs
 
 Written to the output folder, with each path reported back:

@@ -17,10 +17,18 @@ def probe(src):
             "fps": round(float(num) / float(den), 2), "has_audio": a is not None,
             "size_mb": round(int(j["format"]["size"]) / 1e6, 1)}
 
+def system_font():
+    # Windows and macOS ffmpeg builds have no default font, so drawtext needs an explicit file there
+    for f in (r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\arial.ttf",
+              "/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/System/Library/Fonts/Helvetica.ttc"):
+        if os.path.exists(f):
+            return "fontfile='" + f.replace("\\", "/").replace(":", "\\:") + "':"
+    return ""
+
 def sheets(src, out, start, end, fps, cols=4, rows=3, width=640):
     # timestamps are burned in as absolute source time
     vf = (f"fps={fps},scale={width}:-1,"
-          f"drawtext=text='%{{pts\\:hms\\:{start}}}':x=8:y=8:fontsize=26:fontcolor=yellow:box=1:boxcolor=black@0.7,"
+          f"drawtext={system_font()}text='%{{pts\\:hms\\:{start}}}':x=8:y=8:fontsize=26:fontcolor=yellow:box=1:boxcolor=black@0.7,"
           f"tile={cols}x{rows}")
     run(["ffmpeg", "-v", "error", "-y", "-ss", str(start), "-to", str(end), "-i", src,
          "-vf", vf, os.path.join(out, "sheet_%02d.jpg")])

@@ -20,7 +20,20 @@ W, H = 1080, 1920
 TOP, BOTTOM = 0.12, 0.15           # vertical safe margins (platform UI)
 COLORS = {"white": "white", "gold": "#F2C230"}
 
+def ffpath(path):  # make a path safe inside an ffmpeg filter option (Windows drive colons, backslashes)
+    return path.replace("\\", "/").replace(":", "\\:")
+
 def find_font():
+    if os.name == "nt":  # fixed font folders: a recursive search of the whole home folder is too slow on Windows
+        home = os.path.expanduser("~")
+        dirs = (os.path.join(home, "fonts"), os.path.join(home, "AppData", "Local", "Microsoft", "Windows", "Fonts"),
+                r"C:\Windows\Fonts")
+        for name in ("Anton-Regular.ttf", "Poppins-Bold.ttf", "Montserrat-ExtraBold.ttf", "DejaVuSans-Bold.ttf",
+                     "impact.ttf", "arialbd.ttf"):
+            for d in dirs:
+                if os.path.exists(os.path.join(d, name)):
+                    return os.path.join(d, name)
+        sys.exit("no bold font found")
     for pat in ("**/Anton-Regular.ttf", "**/Poppins-Bold.ttf", "**/Montserrat-ExtraBold.ttf", "**/DejaVuSans-Bold.ttf"):
         for root in (os.path.expanduser("~"), "/usr/share/fonts"):
             hit = glob.glob(os.path.join(root, pat), recursive=True)
@@ -109,7 +122,7 @@ def main(plan_path):
             tf = os.path.join(tmp, f"c{i}_{j}.txt")
             open(tf, "w").write(line)
             draws.append(
-                f"drawtext=fontfile='{fontfile}':textfile='{tf}':fontsize={size}:"
+                f"drawtext=fontfile='{ffpath(fontfile)}':textfile='{ffpath(tf)}':fontsize={size}:"
                 f"fontcolor={COLORS.get(c.get('color', 'white'), 'white')}:borderw={max(4, size // 10)}:bordercolor=black:"
                 f"x=(w-text_w)/2:y={y0 + j * lh}:enable='between(t,{t0},{t1})':"
                 f"alpha='min(1,(t-{t0})/0.15)'")
@@ -121,6 +134,9 @@ def main(plan_path):
            "-c:v", "libx264", "-crf", "21", "-preset", "medium", "-pix_fmt", "yuv420p",
            "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", p["out"]]
     r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode and "filter_complex_script" in r.stderr:  # newer ffmpeg dropped this option: load the file with -/filter_complex
+        cmd[cmd.index("-filter_complex_script")] = "-/filter_complex"
+        r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode:
         sys.exit(r.stderr[-2000:])
     print(p["out"], f"{dur:.1f}s", f"{os.path.getsize(p['out']) / 1e6:.1f} MB", "font:", os.path.basename(fontfile))
