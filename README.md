@@ -1,193 +1,125 @@
 # agents-skills-and-tools
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Last Commit](https://img.shields.io/github/last-commit/zainbaq/agents-skills-and-tools)](https://github.com/zainbaq/agents-skills-and-tools/commits/main)
-[![Azure AI](https://img.shields.io/badge/Azure-AI%20Search-0078D4?logo=microsoftazure)](https://azure.microsoft.com/en-us/products/ai-services/ai-search)
-[![Claude Code](https://img.shields.io/badge/Claude-Code-D97757?logo=anthropic)](https://claude.ai/code)
+[![Lint skills](https://github.com/zainbaq/agents-skills-and-tools/actions/workflows/lint.yml/badge.svg)](https://github.com/zainbaq/agents-skills-and-tools/actions/workflows/lint.yml)
 
-> A reusable library of Claude Code sub-agents and slash-command skills covering software engineering, design, marketing, social media, strategy, and daily productivity — built from production use and research into what actually works.
+> A Claude plugin marketplace of pods: small groups of skills that each do one job from start to finish.
 
-## What's Inside
+## What a pod is
 
-| Directory | Contents |
-|-----------|----------|
-| `agents/` | 11 Claude Code sub-agents across engineering, design, marketing, research, and strategy |
-| `skills/` | 22 Claude Code slash-command skills for daily work |
-| `tools/` | Standalone scripts and utilities for AI engineering workflows |
-| `msft/` | Azure AI Search configs, Power Automate patterns, Copilot Studio deployment guides |
-| `docs/` | Architecture Decision Records and environment setup guides |
+A pod is a small group of skills that serve one specific job and run roughly in order on one piece of work. Each pod is a separate plugin, so you install only the one you need.
 
-## Who This Is For
+A general-purpose collection of unrelated skills is not a pod and does not ship here.
 
-- Developers and teams using Claude Code as a daily workflow tool
-- Designers, marketers, and strategists who want reusable AI workflows
-- AI engineers building RAG pipelines and agent systems on Azure
-- Anyone who wants to encode expertise into reusable, team-shareable prompts
+## Pods available
 
-## Agents
+| Pod | Job | Skills |
+| --- | --- | --- |
+| [`lazycut`](plugins/lazycut/) | Takes raw gameplay footage to a published short-form post. | 9 |
 
-Sub-agents are `.md` files with YAML frontmatter that Claude Code reads from your `.claude/agents/` directory. Each agent includes a runtime-ready file you can copy directly.
+### lazycut
 
-### Engineering Agents
+The skills, in the order they usually run:
 
-| Agent | What it does |
-|-------|-------------|
-| `architect` | System design, ADRs, Azure architecture review, RAG pipeline design |
-| `code-reviewer` | Code quality, correctness, security, performance, test coverage |
-| `security-auditor` | OWASP Top 10, secret scanning, auth bypass, CVE analysis |
-| `integration-validator` | API contracts, Azure service integration, resilience patterns |
-| `qa-engineer` | Test design, test writing, coverage analysis |
+| Skill | What it does |
+| --- | --- |
+| `video-analyst` | Produces a timestamped account of a video from sampled frames, plus the facts the creator must confirm. |
+| `clip-finder` | Picks clip candidates from an analysed video and returns exact ranges to cut. |
+| `clip-batch-planner` | Plans a batch of videos into clip ideas and a posting schedule, and drives the other skills. |
+| `video-editor` | Renders one uncut range as a vertical clip with burned-in on-screen text. |
+| `voiceover-script` | Writes a timed voiceover script that is separate from the on-screen text. |
+| `voiceover-audio` | Generates the voice, places each line on the clip, and ducks the original audio. |
+| `post-package` | Writes the per-platform post package and runs a scripted pre-publish gate. |
+| `video-research` | Researches competing videos, overlap with past uploads, and thumbnail direction. |
+| `youtube-gaming-seo` | Generates YouTube titles, description, tags and a pre-publish checklist for a gaming video. |
 
-### Design, Marketing & Strategy Agents
+**What it needs on your machine:** Python 3 and `ffmpeg`. `video-editor` also needs the `Pillow` package. The local voice route in `voiceover-audio` needs `kokoro-onnx`, `soundfile` and `numpy`, and downloads a voice model of about 350 MB. Each skill lists its own requirements under Inputs.
 
-| Agent | What it does |
-|-------|-------------|
-| `content-strategist` | Social media calendars, platform-native copy, campaign content |
-| `ux-designer` | UX/UI critique, brand voice auditing, microcopy review, design system docs |
-| `research-analyst` | Multi-source synthesis, competitive intelligence, research briefs |
-| `data-analyst` | Metric interpretation, insight narratives, dashboard analysis |
-| `technical-writer` | SOPs, user guides, runbooks, documentation audits |
-| `business-strategist` | SWOT analysis, business cases, competitive positioning (uses Opus) |
+**Channel brief:** the skills contain no channel names, handles or links. Copy [`channel-brief.example.md`](plugins/lazycut/skills/youtube-gaming-seo/references/channel-brief.example.md), fill it in for your channel, and give its path to the skills that ask for one. Keep the filled-in copy out of public repositories.
 
-### Install an Agent
+## Install
+
+The marketplace is named `zainbaq-pods`.
+
+### In Claude Code
+
+Add the marketplace:
+
+```
+/plugin marketplace add zainbaq/agents-skills-and-tools
+```
+
+Install one pod:
+
+```
+/plugin install lazycut@zainbaq-pods
+```
+
+The same two steps from a shell:
 
 ```bash
-# Clone the repo
-git clone https://github.com/zainbaq/agents-skills-and-tools.git
-cd agents-skills-and-tools
-
-# Project-scoped (checked into your repo's version control)
-cp agents/architect/architect.md .claude/agents/architect.md
-
-# User-scoped (available in every project on your machine)
-mkdir -p ~/.claude/agents
-cp agents/content-strategist/content-strategist.md ~/.claude/agents/
-cp agents/ux-designer/ux-designer.md ~/.claude/agents/
-cp agents/research-analyst/research-analyst.md ~/.claude/agents/
-# ... repeat for any agents you want
+claude plugin marketplace add zainbaq/agents-skills-and-tools
 ```
-
-Or install all agents at once:
 
 ```bash
-mkdir -p ~/.claude/agents
-for agent in agents/*/; do
-  name=$(basename "$agent")
-  cp "$agent$name.md" ~/.claude/agents/
-done
+claude plugin install lazycut@zainbaq-pods
 ```
 
-Restart Claude Code after copying for agents to be available.
+### In the Claude app
 
-## Skills
+1. Open the **Customize** menu in the left sidebar and go to the **Plugins** tab. In Cowork, open the **Cowork** tab first, then **Customize**.
+2. Click **Add**, then **Add marketplace**.
+3. Under **Add from a repository**, enter `zainbaq/agents-skills-and-tools`.
+4. Open the **Discover** tab, select `lazycut`, and click **Add**.
 
-Skills are slash commands invoked inside Claude Code with `/skill-name`. Each skill is a single `SKILL.md` file with a YAML frontmatter and a prompt body.
+## Talos
 
-### Engineering Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `implementation-planning` | `/implementation-planning` | Break a feature into sequenced implementation steps |
-| `adr-writing` | `/adr-writing` | Generate an Architecture Decision Record |
-| `api-design` | `/api-design` | Design a RESTful or GraphQL API with OpenAPI spec |
-| `project-estimation` | `/project-estimation` | Estimate effort, staffing, timeline, scope, and week-by-week delivery plan |
-
-### Design Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `design-feedback` | `/design-feedback` | Prioritized UX/UI critique with accessibility checks |
-| `brand-voice-audit` | `/brand-voice-audit` | Audit copy for brand voice consistency |
-
-### Marketing Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `campaign-brief` | `/campaign-brief` | Full marketing campaign brief with audience, insight, KPIs |
-| `email-sequence` | `/email-sequence` | Multi-email sequence with subject lines and CTAs |
-| `landing-page-copy` | `/landing-page-copy` | Conversion-focused landing page copy from a brief |
-
-### Social Media Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `social-calendar` | `/social-calendar` | 30-day multi-platform content calendar |
-| `social-post-adapt` | `/social-post-adapt` | Adapt content to a specific platform natively |
-| `hashtag-strategy` | `/hashtag-strategy` | Tiered hashtag strategy (niche + mid + broad) |
-
-### Productivity Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `meeting-summary` | `/meeting-summary` | Key decisions and action items (owner + deadline) from notes |
-| `follow-up-email` | `/follow-up-email` | Post-meeting follow-up email for attendees |
-| `status-report` | `/status-report` | Project status report with RAG status, blockers, and next steps |
-
-### Writing & Daily Work Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `exec-summary` | `/exec-summary` | Executive summary surfacing decisions and risks |
-| `research-synthesis` | `/research-synthesis` | Synthesize findings across multiple sources |
-| `sop-create` | `/sop-create` | Standard operating procedure with steps and troubleshooting |
-| `proofread` | `/proofread` | Grammar, clarity, tone, and consistency editing pass |
-
-### Strategy & Analysis Skills
-
-| Skill | Invoke with | What it does |
-|-------|-------------|-------------|
-| `swot-analysis` | `/swot-analysis` | Evidence-grounded SWOT with strategic synthesis |
-| `competitive-analysis` | `/competitive-analysis` | Competitor positioning matrix with gaps and opportunities |
-| `data-insights` | `/data-insights` | Plain-language insight narrative from metrics or dashboard data |
-
-### Install Skills
-
-```bash
-mkdir -p ~/.claude/commands
-
-# Install individual skills
-cp skills/meeting-summary/SKILL.md ~/.claude/commands/meeting-summary.md
-cp skills/design-feedback/SKILL.md ~/.claude/commands/design-feedback.md
-cp skills/campaign-brief/SKILL.md ~/.claude/commands/campaign-brief.md
-# ... repeat for any skills you want
-```
-
-Or install all skills at once:
-
-```bash
-mkdir -p ~/.claude/commands
-for skill in skills/*/; do
-  name=$(basename "$skill")
-  cp "${skill}SKILL.md" ~/.claude/commands/${name}.md
-done
-```
-
-Then invoke them in Claude Code:
+The marketplace also lists `promethean-talos`. It lives in its own repository, [zainbaq/promethean-talos](https://github.com/zainbaq/promethean-talos), and none of its files are in this one. Listing it here means it installs from the same marketplace:
 
 ```
-/meeting-summary [paste your meeting notes]
-/design-feedback [describe the screen or paste copy]
-/campaign-brief Q3 product launch targeting operations managers
-/swot-analysis our current market position vs. competitors
-/exec-summary [paste the report or document]
-/social-calendar B2B SaaS brand, LinkedIn + Instagram, 4x/week
-/project-estimation Estimate this Azure AI solution for 2 developers at 20 hours/week each and export an Excel workbook
+/plugin install promethean-talos@zainbaq-pods
 ```
+
+## Security
+
+- Installing a pod lets Claude run that pod's scripts on your machine. Read the scripts in `plugins/<pod>/skills/*/scripts/` before you install; they are short.
+- The lazycut scripts call `ffmpeg` on files you point them to and write only to the output folder you give. Two skills suggest downloads when you choose to use them: a caption font in `video-editor` and a voice model in `voiceover-audio`.
+- `promethean-talos` is fetched from a different repository. Review that repository separately.
+- This repository contains no credentials. If you find something sensitive, please open an issue.
+
+## Repository layout
+
+| Path | What it is |
+| --- | --- |
+| `.claude-plugin/marketplace.json` | The marketplace manifest. |
+| `plugins/` | One folder per pod. |
+| `plugins/lazycut/evals/` | Trigger prompts for each lazycut skill. |
+| `scripts/` | Repository checks: `lint_skills.py` and `scrub_check.py`. |
+| `archive/` | Older content. See below. |
+| `msft/` | Azure AI Search, Copilot Studio and Power Automate reference files. |
+| `docs/` | Architecture Decision Records and a Windows setup guide. |
+| `tools/` | Standalone utilities. |
+
+`msft/`, `docs/` and `tools/` are reference material. They are not part of the marketplace and are not installed by any pod.
+
+## The archive
+
+[`archive/`](archive/) holds the 22 general-purpose skills and 11 agents this repository used to offer. They are kept for reference, with their history. They are not installed by the marketplace and are not maintained. See [archive/README.md](archive/README.md).
 
 ## About
 
-**Syed Zain Ali Baquar** — Senior AI Engineer at [HSO](https://www.hso.com). Principal at [Promethean Labs](https://promethean.ai).
+**Syed Zain Ali Baquar** — Senior AI Engineer at a Microsoft solutions partner. Principal at [Promethean Labs](https://promethean.ai).
 
-I build production AI systems using Azure AI Search, Copilot Studio, Claude Code, Power Automate, and Microsoft Fabric. This repo documents the patterns, decisions, and configurations that actually work in enterprise environments.
+I build production AI systems using Azure AI Search, Copilot Studio, Claude Code, Power Automate, and Microsoft Fabric.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?logo=linkedin)](https://linkedin.com/in/zainbaq)
 [![X](https://img.shields.io/badge/X-Follow-000000?logo=x)](https://x.com/zainbaq)
 
-Interested in working together? Reach out via [LinkedIn](https://linkedin.com/in/zainbaq) or the [Promethean Labs consulting page](https://promethean.ai).
+Interested in working together? Reach out via [LinkedIn](https://linkedin.com/in/zainbaq) or [Promethean Labs](https://promethean.ai).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). A skill is added only after the task has been done by hand three times, and a pod needs at least three skills serving one job.
 
 ## License
 

@@ -1,60 +1,87 @@
-# Contributing to agents-skills-and-tools
+# Contributing
 
-This is a production reference library first. Contributions that add real patterns from real deployments are welcome. Theoretical or speculative additions are not.
+This repository is a Claude plugin marketplace of pods. A pod is a small group of skills that serve one specific job and run roughly in order on one piece of work. Contributions are welcome when they meet the two admission rules below.
 
-## What Makes a Good Contribution
+## Admission rules
 
-**Sub-agents and skills**: Should be battle-tested in at least one project. Include the tradeoffs in the `SKILL.md` — what the agent does well and where it falls short.
+1. **A skill is added only after the task has been done by hand three times.** A skill records a way of working that has already proved itself. If the task has not been done by hand three times, it is too early to know what the skill should say.
+2. **A pod needs at least three skills serving one job.** A collection of unrelated skills is not a pod. If the skills do not share one job and one piece of work, they do not ship together.
 
-**Azure AI Search configs**: Must be tested against a live Azure AI Search instance. Include the index schema alongside the indexer config so the two can be validated together.
+## Repository layout
 
-**Power Automate patterns**: Document the authentication approach explicitly. The most common failure mode is auth — don't leave it out.
+| Path | What it is |
+| --- | --- |
+| `.claude-plugin/marketplace.json` | Lists every pod, and any external plugin. |
+| `plugins/<pod>/` | One pod. Installing a pod copies only this folder. |
+| `plugins/<pod>/.claude-plugin/plugin.json` | The pod's manifest. Its `name` must equal the folder name and the marketplace entry. |
+| `plugins/<pod>/skills/<skill>/` | One skill: `SKILL.md`, plus `scripts/` and `references/` when needed. |
+| `plugins/<pod>/evals/` | Trigger prompts for each skill, in the layout `claude plugin eval` expects. |
+| `scripts/` | Repository checks. Not part of any pod. |
+| `archive/` | Old content. Not installed, not maintained. Do not add to it. |
+| `msft/`, `docs/`, `tools/` | Reference material, separate from the marketplace. |
 
-**ADRs**: Follow the existing format (Status / Context / Decision / Consequences / Alternatives). Include why the alternatives were rejected with specific reasons, not vague ones.
+A pod cannot reference a file outside its own folder, because installing copies only that folder.
 
-## How to Contribute
+## Rules for every skill in a pod
 
-### Adding a New Agent
+Skills must work in the Claude app, in Claude Code, and when called by a subagent that has no conversation history.
 
-1. Create a directory under `agents/<agent-name>/`
-2. Add three files:
-   - `<agent-name>.md` — runtime-ready Claude Code agent (YAML frontmatter + system prompt body)
-   - `prompt.yml` — YAML specification document
-   - `SKILL.md` — human documentation (what it does, when to invoke, install instructions, examples)
-3. Follow the existing agent format. Run the agent in Claude Code against a real codebase before opening the PR.
+**Frontmatter**
 
-### Adding a New Skill
+- Only `name` and `description`. Other keys are rejected outside Claude Code.
+- `name`: lowercase letters, numbers and hyphens, at most 64 characters, the same as the folder name.
+- `description`: third person, at most 1,024 characters. Say what the skill does first, then when to use it.
 
-1. Create a directory under `skills/<skill-name>/`
-2. Add `SKILL.md` with YAML frontmatter (`name`, `description`, `allowed-tools`) and the full prompt as the body
-3. Test the skill by invoking it via `/skill-name` in Claude Code
+**Body**
 
-### Adding an Azure Pattern
+- Critical rules go in the first lines, before anything else. Only the start of a skill survives a long conversation being compacted.
+- Then three headings in this order: `## Inputs`, `## Process`, `## Outputs`.
+- Inputs are explicit: a file path or stated values, never "the video we discussed".
+- Outputs are files written to a path the caller gives, with the path reported back.
+- Keep the file under 500 lines. Move long reference material into a file one level down and link to it.
 
-1. Place configs/templates in the appropriate subdirectory under `azure-ai-search/`, `power-automate/`, or `copilot-studio/`
-2. Include a README or markdown guide that explains the pattern, the auth approach, and a troubleshooting table
+**Scripts**
 
-## PR Checklist
+- Scripts live in `scripts/` inside the skill folder and are referred to by relative path.
+- The skill tells Claude to run the script, not to read it.
+- Standard library first. If a script needs anything else (ffmpeg, a pip package), the skill lists it under Inputs.
+- Anything that must hold every time is enforced by a script the skill runs, not by a sentence.
 
-Before opening a pull request:
+**Content**
 
-- [ ] Tested locally in Claude Code (for sub-agents and skills)
-- [ ] No secrets, connection strings, or subscription IDs in any file
-- [ ] YAML frontmatter is valid (no syntax errors)
-- [ ] JSON files are valid and pretty-printed with 2-space indent
-- [ ] `SKILL.md` documents at least one concrete example invocation
-- [ ] If adding an ADR, it uses the existing numbering sequence and format
+- No channel-specific or organisation-specific facts. Where a skill needs them, it reads a brief the caller points to.
+- No client, employer or personal names. No table names, endpoints or credentials.
 
-## Issue Labels
+## Checks to run before a push
 
-| Label | Use for |
-|-------|---------|
-| `new-agent` | Proposals for new Claude Code sub-agents |
-| `new-skill` | Proposals for new Claude Code skills |
-| `azure-pattern` | New Azure AI Search, Power Automate, or Copilot Studio patterns |
-| `bug` | Something documented here doesn't work as described |
-| `docs` | Documentation improvements |
+Run these from the repository root. All three must pass.
 
-## Code of Conduct
+```bash
+python scripts/lint_skills.py
+```
+
+Checks frontmatter keys, name and description limits, the three headings, the 500-line limit, and that every referenced script exists. This also runs in GitHub Actions on every push and pull request.
+
+```bash
+python scripts/scrub_check.py
+```
+
+Fails if a blocked term appears in any file that could be pushed. The terms come from a file named `.scrub-blocklist` in the repository root, which you create yourself: one term per line, with client names, employer names and anything else that must never appear here. That file is listed in `.gitignore` and must never be committed. With no blocklist file the script prints a warning and passes, so it only protects you once the file exists. Run it before every push.
+
+```bash
+claude plugin validate .
+```
+
+Checks the marketplace manifest and each pod's `plugin.json`. This is a local step and is not run in GitHub Actions.
+
+## Pull request checklist
+
+- [ ] The two admission rules are met, and the pull request says how.
+- [ ] `lint_skills.py`, `scrub_check.py` and `claude plugin validate .` all pass.
+- [ ] Every new skill has three prompts that should trigger it and three that should not, under `plugins/<pod>/evals/`.
+- [ ] No secrets, connection strings, names or internal identifiers in any file.
+- [ ] Nothing in `msft/`, `docs/`, `tools/` or `archive/` was changed as a side effect.
+
+## Code of conduct
 
 This project follows the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/) Code of Conduct.
